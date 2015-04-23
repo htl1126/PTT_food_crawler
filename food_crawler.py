@@ -80,17 +80,25 @@ def main(url):
     root_page_data = BeautifulSoup(root_page)
     count = 0
     store_info = None
+    end_reached = False
     while True:
         title_lst = crawler.get_title_list(root_page_data)
         for title in title_lst:
             if u'食記' in title.text and not title.text.startswith('Re:'):
                 store_info = None
-                if title.a['href'] == '/bbs/Food/M.1376585048.A.EAA.html':
+                # List of 'blackholes'
+                if title.a['href'] in ['/bbs/Food/M.1376585048.A.EAA.html',
+                                       '/bbs/Food/M.1345599928.A.C5E.html',
+                                       '/bbs/Food/M.1335827893.A.E6C.html',
+                                       '/bbs/Food/M.1334503278.A.239.html']:
                     continue
+                if title.a['href'] == '/bbs/Food/M.1327665674.A.407.html':
+                    print "Reached 2012/1/1"
+                    end_reached = True
+                    break
                 sub_page_data = BeautifulSoup(crawler.get_page("https://www.ptt.cc/{0}"
                                                        .format(title.a['href'])))
                 store_info = crawler.get_store_info(sub_page_data)
-                print "https://www.ptt.cc/{0}".format(title.a['href'])
                 if store_info:
                     store_info['url'] = "https://www.ptt.cc{0}".format(title.a['href'])
                     if not store_info['name']:
@@ -99,6 +107,8 @@ def main(url):
                         print key, store_info[key]
                     count += 1
                     print
+        if end_reached:
+            break
         next_mark = root_page_data.findAll('a', {'class': 'btn wide'})[1]
         if not next_mark:
             break

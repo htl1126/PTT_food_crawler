@@ -108,6 +108,7 @@ class ptt_crawler(object):
     def get_pos(self, addr):
         # ref: http://stackoverflow.com/questions/16002213/
         #      getting-lat-and-long-from-google-maps-api-v3
+        # WARNING: You may exceed your daily request quota
         params = {'sensor': 'false', 'address': addr}
         params = urllib.urlencode(params)
         data = urlopen('http://maps.googleapis.com/maps/api/geocode/json?{0}'.format(params)).read()
@@ -144,6 +145,11 @@ def main(url):
                 sub_page_data = BeautifulSoup(crawler.get_page("https://www.ptt.cc/{0}"
                                                        .format(title.a['href'])))
                 store_info = crawler.get_store_info(sub_page_data)
+                # only consider restaurants in the Taiwan Island
+                if store_info['position']:
+                    if not (120.035699 < store_info['position'][0] < 122.007088
+                            and 21.897077 < store_info['position'][1] < 25.299467):
+                        continue
                 if store_info:
                     store_info['url'] = "https://www.ptt.cc{0}".format(title.a['href'])
                     store_info['category'] = classifier.get_text_category(sub_page_data.text)

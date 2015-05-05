@@ -4,8 +4,14 @@
 import sys
 import locale
 import codecs
+import urllib
+import json
 from BeautifulSoup import BeautifulSoup
 from urllib2 import urlopen, build_opener
+
+# ref: http://xiaosu.blog.51cto.com/2914416/1340932
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 # ref: http://stackoverflow.com/questions/4545661/unicodedecodeerror
 #      -when-redirecting-to-file
@@ -70,6 +76,7 @@ class ptt_crawler(object):
                 and u'網址' not in line):
                 line = self.remove_colon(line.lstrip()).lstrip()
                 store_info['address'] = line
+                store_info['position'] = self.get_pos(line)
             elif u'話：' in line or u'話:' in line:
                 line = self.remove_colon(line.lstrip()).lstrip()
                 store_info['phone'] = line
@@ -86,7 +93,7 @@ class ptt_crawler(object):
 
     def get_store_info(self, data):
         store_info = {'name': None, 'url': None, 'phone': None, 'address': None,
-                      'price_range': None, 'category': None}
+                      'price_range': None, 'category': None, 'position': None}
         raw_text = data.text.split('\n')
         text = [raw_text_elem for raw_text_elem in raw_text if raw_text_elem != '']
         try:
@@ -97,6 +104,19 @@ class ptt_crawler(object):
             pass
         store_info.update(self.extract_store_info(text, store_info))
         return store_info
+
+    def get_pos(self, addr):
+        # ref: http://stackoverflow.com/questions/16002213/
+        #      getting-lat-and-long-from-google-maps-api-v3
+        params = {'sensor': 'false', 'address': addr}
+        params = urllib.urlencode(params)
+        data = urlopen('http://maps.googleapis.com/maps/api/geocode/json?{0}'.format(params)).read()
+        addr = json.loads(data)
+        try:
+            location = addr['results'][0]['geometry']['location']
+            return (location['lng'], location['lat'])
+        except:
+            return (None, None)
 
 def main(url):
     crawler = ptt_crawler()

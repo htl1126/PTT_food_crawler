@@ -55,7 +55,7 @@ class ptt_crawler(object):
     def get_page(self, url):
         try:
             data = urlopen(url)
-            return data
+            return data.read()
         # ref: http://stackoverflow.com/questions/9265616/why-does-this-url-raise-badstatusline
         #      -with-httplib2-and-urllib2
         except:

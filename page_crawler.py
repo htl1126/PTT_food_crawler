@@ -17,30 +17,6 @@ sys.setdefaultencoding('utf8')
 #      -when-redirecting-to-file
 sys.stdout = codecs.getwriter(locale.getpreferredencoding())(sys.stdout)
 
-#imcomplete
-class text_classifier(object):
-    def __init__(self):
-        self.keyword_dict = {u'火鍋': [u'鍋', u'涮'],
-                             u'中式': [u'牛肉麵', u'雞排', u'便當', u'鍋貼', u'炒麵', u'炒飯',
-                                       u'燴飯', u'羹', u'米糕', u'割包', u'刈包', u'豆漿', u'蛋餅',
-                                       u'豆花', u'麵線', u'貴州', u'黔', u'廣東', u'粵', u'福建',
-                                       u'閩', u'浙江', u'浙', u'上海', u'山東', u'魯', u'東北',
-                                       u'新疆', u'疆', u'蒙古', u'蒙', u'四川', u'川', u'湖南',
-                                       u'湘', u'小籠', u'湯包', u'包子', u'魚翅', u'湯圓', u'菜飯',
-                                       u'雲南', u'滇', u'緬'],
-                             u'西式': [u'咖啡', u'早午餐', u'brunch', u'Brunch', u'帕尼尼',
-                                       u'鬆餅', u'義大利麵', u'漢堡', u'三明治', u'海鮮飯',
-                                       u'燉飯', u'薯條', u'吐司'],
-                             u'日韓': [u'拉麵', u'丼', u'韓式泡菜', u'日式', u'韓式', u'壽司',
-                                       u'生魚片', u'天婦羅'],
-                             u'吃到飽': [u'Buffet', u'buffet', u'自助餐', u'吃到飽'],
-                             u'東南亞': [u'河粉', u'越式', u'泰式', u'清真']}
-    def get_text_category(self, text):
-        for category in self.keyword_dict:
-            for term in self.keyword_dict[category]:
-                if term in text:
-                    return category
-
 class ptt_crawler(object):
 
     def remove_colon(self, s):
@@ -109,6 +85,7 @@ class ptt_crawler(object):
         # ref: http://stackoverflow.com/questions/16002213/
         #      getting-lat-and-long-from-google-maps-api-v3
         # WARNING: You may exceed your daily request quota
+        # (https://developers.google.com/maps/documentation/business/articles/usage_limits)
         params = {'sensor': 'false', 'address': addr}
         params = urllib.urlencode(params)
         data = urlopen('http://maps.googleapis.com/maps/api/geocode/json?{0}'.format(params)).read()
@@ -121,7 +98,6 @@ class ptt_crawler(object):
 
 def main(url):
     crawler = ptt_crawler()
-    classifier = text_classifier()
     root_page = crawler.get_page(url)
     root_page_data = BeautifulSoup(root_page)
     count = 0
